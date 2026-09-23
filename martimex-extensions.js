@@ -1,6 +1,6 @@
 (function () {
   // ═════════════════════════════════════════════════════════════════════
-  //  MARTIMEX — kartice preporučenih proizvoda za Marti (v13)
+  //  MARTIMEX — kartice preporučenih proizvoda za Marti (v14)
   //
   //  Dva extensiona, isti dizajn:
   //   1) ProductCarouselExtension → trace "ext_product_carousel"
@@ -46,8 +46,8 @@
   //   - gumb na hover: lagano se podigne, a preko njega jednom prijeđe
   //     odsjaj svjetla, kao po staklu bočice (boja gumba se ne mijenja)
   //
-  //  Mjere: jedan ritam od 20 px — rub kartice, razmaci između dijelova i
-  //  visina retka teksta. Svaka bočica se automatski "izreže" iz fotografije
+  //  Mjere: okomito jedan ritam od 20 px (gornji i donji rub, razmaci između
+  //  dijelova, visina retka teksta), lijevo i desno 16 px od ruba kartice. Svaka bočica se automatski "izreže" iz fotografije
   //  i postavi u kadar jednako (ista podloga, ista najveća visina), bez obzira
   //  na to koliko bijelog prostora ima originalna fotografija.
   //   - tanka linija koja se prema krajevima gubi odvaja gornji dio od opisa
@@ -195,7 +195,7 @@
         display: flex;
         flex-direction: column;
         min-width: 0;
-        padding: 17px 20px 20px;      /* gore 3 px manje: slova imaju prazan prostor iznad sebe, pa je vidljivi razmak svuda 20 px */
+        padding: 17px 16px 20px;      /* lijevo/desno 16 px; gore 3 px manje jer slova imaju prazan prostor iznad sebe, pa je vidljivi razmak gore i dolje 20 px */
         background: var(--mx-kartica);
         border: 1px solid var(--mx-linija);
         border-radius: 18px;
@@ -437,7 +437,7 @@
           ${prozirna(B.roza, 0)} 100%);
       }
 
-      /* opis: poravnat s rubom slike i linijom (20 px od ruba kartice) */
+      /* opis: poravnat s rubom slike i linijom (16 px od ruba kartice) */
       .mx-opis {
         margin: 15px 0 0;             /* + prored prvog retka ≈ 20 px vidljivog razmaka */
         text-wrap: pretty;            /* bez usamljene riječi u zadnjem retku */
@@ -740,11 +740,11 @@
       const jeShadow = typeof ShadowRoot !== 'undefined' && korijen instanceof ShadowRoot;
       const cilj = jeShadow ? korijen : (korijen === document ? document.head : null);
       const stil = document.createElement('style');
-      stil.setAttribute('data-mx-kartice', '13b');
+      stil.setAttribute('data-mx-kartice', '14');
       stil.textContent = CSS;
       if (!cilj) { element.appendChild(stil); return; }       // element još nije u DOM-u
       const stari = cilj.querySelector('style[data-mx-kartice]');
-      if (stari && stari.getAttribute('data-mx-kartice') === '13b') return;
+      if (stari && stari.getAttribute('data-mx-kartice') === '14') return;
       if (stari) stari.remove();                              // stara verzija stila (npr. v2)
       cilj.appendChild(stil);
     }
