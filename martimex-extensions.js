@@ -1,6 +1,6 @@
 (function () {
   // ═════════════════════════════════════════════════════════════════════
-  //  MARTIMEX — kartice preporučenih proizvoda za Marti (v11)
+  //  MARTIMEX — kartice preporučenih proizvoda za Marti (v12)
   //
   //  Dva extensiona, isti dizajn:
   //   1) ProductCarouselExtension → trace "ext_product_carousel"
@@ -43,6 +43,8 @@
   //   - fotografija se kvalitetno umanji točno na piksele ekrana u kojima se
   //     prikazuje, pa je preglednik ne mora umanjivati dok se bočica pomiče:
   //     ostaje oštra i na hoveru
+  //   - gumb na hover: lagano se podigne, a preko njega jednom prijeđe
+  //     odsjaj svjetla, kao po staklu bočice (boja gumba se ne mijenja)
   //   - tanka linija koja se prema krajevima gubi odvaja gornji dio od opisa
   //
   //  Pojava: kad Marti pošalje preporuke, preko kartica prođe blaga
@@ -447,10 +449,28 @@
         white-space: nowrap;
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
-        transition: transform .2s var(--mx-glatko);
+        overflow: hidden;
+        isolation: isolate;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, .1);
+        transition: transform .35s var(--mx-glatko), box-shadow .35s var(--mx-glatko);
+      }
+      .mx-gumb > span { position: relative; z-index: 1; }   /* tekst ostaje iznad odsjaja */
+      /* odsjaj svjetla: tanka svijetla pruga koja na hover jednom prijeđe preko gumba */
+      .mx-gumb::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 42%;
+        z-index: 0;
+        background: linear-gradient(100deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, .26) 50%, rgba(255, 255, 255, 0) 100%);
+        transform: translateX(-140%) skewX(-18deg);
+        pointer-events: none;
       }
       .mx-gumb:focus { outline: none; }
       .mx-gumb:focus-visible { outline: 2px solid var(--mx-tinta); outline-offset: 3px; }
+      .mx-gumb:focus-visible::after { transform: translateX(340%) skewX(-18deg); transition: transform .9s var(--mx-meko); }
       .mx-gumb:active { transform: scale(.97); }
 
       /* ── carousel ── */
@@ -581,6 +601,16 @@
         .mx-kartica:hover .mx-ucitano .mx-sjena { left: 30%; right: 30%; top: 81%; height: 7%; }
         .mx-kartica:hover .mx-ucitano .mx-aura { top: 1%; right: -5%; bottom: 9%; left: -5%; }
         .mx-kartica:hover .mx-foto.mx-ucitano .mx-boca { top: 0; }
+        .mx-gumb:hover {
+          transform: translateY(-1.5px);
+          box-shadow: 0 7px 14px -7px rgba(0, 0, 0, .45);
+        }
+        .mx-gumb:hover::after { transform: translateX(340%) skewX(-18deg); transition: transform .9s var(--mx-meko); }
+        .mx-gumb:active {
+          transform: translateY(0) scale(.97);
+          box-shadow: 0 1px 2px rgba(0, 0, 0, .1);
+          transition-duration: .12s;
+        }
       }
 
       /* ── pojava: izmaglica spreja i bočice koje izranjaju iz nje ── */
@@ -659,7 +689,7 @@
       }
 
       @media (prefers-reduced-motion: reduce) {
-        .mx-maglica { display: none; }
+        .mx-maglica, .mx-gumb::after { display: none; }
         .mx-pojava .mx-kartica,
         .mx-pojava .mx-kontrole { animation: mx-samo-prozirnost .35s linear backwards; animation-delay: 0s; }
         .mx-kartica, .mx-kartica::before, .mx-nisa, .mx-boca, .mx-aura, .mx-sjena, .mx-gumb { transition-duration: .01s !important; }
@@ -672,11 +702,11 @@
       const jeShadow = typeof ShadowRoot !== 'undefined' && korijen instanceof ShadowRoot;
       const cilj = jeShadow ? korijen : (korijen === document ? document.head : null);
       const stil = document.createElement('style');
-      stil.setAttribute('data-mx-kartice', '11');
+      stil.setAttribute('data-mx-kartice', '12');
       stil.textContent = CSS;
       if (!cilj) { element.appendChild(stil); return; }       // element još nije u DOM-u
       const stari = cilj.querySelector('style[data-mx-kartice]');
-      if (stari && stari.getAttribute('data-mx-kartice') === '11') return;
+      if (stari && stari.getAttribute('data-mx-kartice') === '12') return;
       if (stari) stari.remove();                              // stara verzija stila (npr. v2)
       cilj.appendChild(stil);
     }
