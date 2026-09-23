@@ -1,0 +1,184 @@
+/* ============================================================
+   NOTTURNO LABS – Voiceflow widget stil ("stakleni" dizajn)
+   Ova datoteka živi u tvom GitHub repozitoriju i učitava se
+   izvana preko `stylesheet` polja u chat.load() pozivu.
+   Sve postavke koje želiš mijenjati su ovdje na vrhu.
+   ============================================================ */
+
+.vfrc-widget {
+  --nl-button-bg: #1f1147;
+  --nl-border-width: 2px;
+  --nl-flow-speed: 4s;             /* manje = brža animacija obruba */
+  --nl-gradient: #e03cf5, #a855f7, #6366f1, #3b82f6, #38bdf8, #3b82f6, #a855f7, #e03cf5;
+  --nl-glow-a: rgba(224, 60, 245, 0.55);
+  --nl-glow-b: rgba(59, 130, 246, 0.55);
+
+  --nl-glass-opacity: 0.55;        /* 0.8 za tamne stranice */
+  --nl-glass-blur: 24px;
+  --nl-text-dark: #24123f;
+  --nl-text-muted: #6b5a86;
+  --nl-accent: #7c3aed;
+  --nl-accent-light: #c084fc;
+}
+
+/* =================== LAUNCHER =================== */
+.vfrc-launcher {
+  box-sizing: border-box !important;
+  border: var(--nl-border-width) solid transparent !important;
+  background-color: transparent !important;
+  background-image:
+    linear-gradient(var(--nl-button-bg), var(--nl-button-bg)),
+    linear-gradient(90deg, var(--nl-gradient)) !important;
+  background-origin: padding-box, border-box !important;
+  background-clip: padding-box, border-box !important;
+  background-size: 100% 100%, 200% 100% !important;
+  background-repeat: no-repeat, repeat !important;
+  background-position: 0 0, 0% 50%;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em;
+  animation:
+    nl-flow var(--nl-flow-speed) linear infinite,
+    nl-glow calc(var(--nl-flow-speed) * 2) ease-in-out infinite !important;
+}
+.vfrc-launcher:focus-visible { outline: 2px solid #ffffff; outline-offset: 3px; }
+
+@keyframes nl-flow {
+  from { background-position: 0 0, 0% 50%; }
+  to   { background-position: 0 0, -200% 50%; }
+}
+@keyframes nl-glow {
+  0%, 100% { box-shadow: 0 0 16px -4px var(--nl-glow-a), 0 8px 24px -10px rgba(10, 5, 30, 0.6); }
+  50%      { box-shadow: 0 0 20px -4px var(--nl-glow-b), 0 8px 24px -10px rgba(10, 5, 30, 0.6); }
+}
+
+/* =================== STAKLENI PROZOR =================== */
+.vfrc-chat {
+  background-color: rgba(250, 246, 255, var(--nl-glass-opacity)) !important;
+  background-image:
+    radial-gradient(120% 55% at 0% 0%, rgba(216, 180, 254, 0.55), rgba(216, 180, 254, 0) 60%),
+    radial-gradient(100% 50% at 100% 100%, rgba(196, 181, 253, 0.45), rgba(196, 181, 253, 0) 60%) !important;
+  -webkit-backdrop-filter: blur(var(--nl-glass-blur)) saturate(160%);
+  backdrop-filter: blur(var(--nl-glass-blur)) saturate(160%);
+  border-radius: 20px !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.65),
+    0 30px 70px -30px rgba(76, 29, 149, 0.5) !important;
+}
+
+.vfrc-header {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+}
+.vfrc-header--title { color: var(--nl-text-dark) !important; }
+.vfrc-header--button {
+  color: var(--nl-text-dark) !important;
+  background: rgba(255, 255, 255, 0.45) !important;
+  border-radius: 999px !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75);
+}
+.vfrc-header--button:hover { background: rgba(255, 255, 255, 0.85) !important; }
+
+.vfrc-avatar {
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.85),
+    0 6px 18px -4px rgba(147, 51, 234, 0.55) !important;
+}
+
+.vfrc-assistant-info--title       { color: var(--nl-text-dark) !important; }
+.vfrc-assistant-info--description { color: var(--nl-text-muted) !important; }
+
+.vfrc-system-response .vfrc-message,
+.vfrc-typing-indicator {
+  background: rgba(255, 255, 255, 0.72) !important;
+  color: var(--nl-text-dark) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 14px !important;
+  box-shadow: 0 6px 18px -10px rgba(76, 29, 149, 0.35);
+}
+
+.vfrc-user-response > div:first-child {
+  background: linear-gradient(135deg, rgba(243, 232, 255, 0.92), rgba(221, 214, 254, 0.92)) !important;
+  color: #3b1d6e !important;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 14px !important;
+  box-shadow: 0 6px 18px -10px rgba(124, 58, 237, 0.45);
+}
+
+.vfrc-system-response--actions .vfrc-button {
+  background: rgba(250, 240, 255, 0.75) !important;
+  color: #7e22ce !important;
+  border: 1px solid rgba(192, 132, 252, 0.45) !important;
+  border-radius: 999px !important;
+  padding: 7px 14px 6px !important;
+  box-shadow: 0 4px 14px -8px rgba(126, 34, 206, 0.45);
+}
+.vfrc-system-response--actions .vfrc-button:hover {
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: #6b21a8 !important;
+}
+
+.vfrc-input-container {
+  background: rgba(255, 255, 255, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 8px 24px -14px rgba(76, 29, 149, 0.35) !important;
+}
+.vfrc-chat-input { background: transparent !important; color: var(--nl-text-dark) !important; }
+.vfrc-chat-input::placeholder { color: #8a7aa3 !important; }
+.vfrc-footer a { color: var(--nl-text-muted) !important; }
+
+#vfrc-send-message {
+  background: linear-gradient(135deg, var(--nl-accent-light), var(--nl-accent)) !important;
+  box-shadow: 0 4px 14px -2px rgba(124, 58, 237, 0.55) !important;
+  transition: opacity 0.15s ease, box-shadow 0.15s ease;
+}
+#vfrc-send-message svg { color: #ffffff !important; }
+.vfrc-input-container:has(.vfrc-chat-input:placeholder-shown) #vfrc-send-message {
+  opacity: 0.45;
+  box-shadow: none !important;
+}
+
+.vfrc-footer > div:has(#vfrc-start-chat),
+.vfrc-prompt {
+  background: rgba(255, 255, 255, 0.75) !important;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+#vfrc-start-chat { background: linear-gradient(135deg, var(--nl-accent-light), var(--nl-accent)) !important; }
+
+/* Mobitel: manje prozirnosti radi čitljivosti preko cijelog ekrana */
+@media (max-width: 768px) {
+  .vfrc-chat {
+    border-radius: 0 !important;
+    background-color: rgba(250, 246, 255, 0.92) !important;
+  }
+}
+/* Stariji preglednici bez podrške za zamućenje */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .vfrc-chat { background-color: rgba(250, 246, 255, 0.95) !important; }
+}
+
+/* Animirani obrub u bojama i oko chat prozora — otkomentiraj ako ga želiš uz stakleni izgled */
+/*
+.vfrc-chat::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: var(--nl-border-width);
+  background-image: linear-gradient(90deg, var(--nl-gradient));
+  background-size: 200% 100%;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 20;
+  animation: nl-flow var(--nl-flow-speed) linear infinite;
+}
+@media (max-width: 768px) { .vfrc-chat::after { display: none; } }
+*/
+
+@media (prefers-reduced-motion: reduce) {
+  .vfrc-launcher, .vfrc-chat::after { animation: none !important; }
+}
