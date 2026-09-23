@@ -1,6 +1,6 @@
 (function () {
   // ═════════════════════════════════════════════════════════════════════
-  //  MARTIMEX — kartice preporučenih proizvoda za Marti (v5)
+  //  MARTIMEX — kartice preporučenih proizvoda za Marti (v6)
   //
   //  Dva extensiona, isti dizajn:
   //   1) ProductCarouselExtension → trace "ext_product_carousel"
@@ -32,7 +32,7 @@
   //     (unutarnja linija se na hover zarumeni)
   //   - bočica stoji u četvrtastoj vitrini s tankim bijelim okvirom
   //     i svjetlom odozgo; na hover preko stakla preleti odsjaj
-  //   - između naziva i opisa: tanka linija s kapljicom parfema
+  //   - tanka linija odvaja gornji dio kartice od opisa
   //   - gumb s tankom unutarnjom linijom, kao utisnuta etiketa
   //
   //  Pojava: kad Marti pošalje preporuke, preko kartica prođe blaga
@@ -48,7 +48,7 @@
   const MX_POSTAVKE = {
     boje: {                   // uvijek u obliku #rrggbb
       tinta:   '#000000', // crna kao trake u headeru i footeru: nazivi, cijene, gumb
-      roza:    '#e2c3ba', // prašnjava roza iza loga: kapljica, izmaglica, popust
+      roza:    '#e2c3ba', // prašnjava roza iza loga: izmaglica, oznaka popusta
       puder:   '#f6ebe7', // najsvjetlija roza: vitrina u kojoj stoji bočica
       linija:  '#eee3de', // tanki rubovi i traka napretka
       dim:     '#6b605c', // opis proizvoda
@@ -111,7 +111,6 @@
     }
 
     const IKONA_BOCA = '<svg viewBox="0 0 48 64" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M19 4.5h10v6.5H19z"/><path d="M21.5 11v4.5M26.5 11v4.5"/><rect x="9.5" y="15.5" width="29" height="44" rx="7"/><path d="M15.5 33.5h17M15.5 38.5h10" stroke-linecap="round" opacity=".55"/></svg>';
-    const IKONA_KAP = '<svg viewBox="0 0 10 14" aria-hidden="true"><path d="M5 .6C3.9 2.4 1 5.9 1 9a4 4 0 0 0 8 0C9 5.9 6.1 2.4 5 .6Z" fill="currentColor"/></svg>';
     const IKONA_LIJEVO = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5"/></svg>';
     const IKONA_DESNO = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5 8 6 4.5 9.5"/></svg>';
 
@@ -319,53 +318,52 @@
         color: var(--mx-kartica);
       }
 
-      /* marka, naziv, cijena */
+      /* marka, naziv, cijena: poravnato lijevo */
       .mx-glava {
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: flex-start;
         justify-content: center;
         width: 100%;
         min-width: 0;
-        text-align: center;
+        text-align: left;
       }
       .mx-marka {
         max-width: 100%;
-        font-size: 14.5px;
+        font-size: 16px;
         line-height: 1.25;
         font-weight: 800;
-        letter-spacing: .01em;
+        letter-spacing: .005em;
         color: var(--mx-tinta);
         overflow-wrap: break-word;
       }
       .mx-naziv {
         max-width: 100%;
         margin: 0;
-        font-size: 14.5px;
-        line-height: 1.35;
+        font-size: 14px;
+        line-height: 1.4;
         font-weight: 400;
         color: var(--mx-tinta);
         overflow-wrap: break-word;
       }
-      .mx-marka + .mx-naziv { margin-top: 4px; }
+      .mx-marka + .mx-naziv { margin-top: 3px; }
       .mx-cijene {
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: flex-start;
         gap: 4px;
-        margin-top: 12px;
+        margin-top: 10px;
       }
       .mx-glava > .mx-cijene:first-child { margin-top: 0; }
       .mx-cijena {
         display: block;
-        font-size: 20px;
-        line-height: 1.1;
+        font-size: 16.5px;
+        line-height: 1.2;
         font-weight: 800;
         color: var(--mx-tinta);
         font-variant-numeric: lining-nums;
         white-space: nowrap;
       }
-      .mx-cijena-ostatak { font-size: .72em; margin-left: .02em; }
       .mx-popust-red {
         display: flex;
         align-items: center;
@@ -388,23 +386,12 @@
         font-weight: 800;
       }
 
-      /* ukras između naziva i opisa: tanka linija s kapljicom parfema */
-      .mx-ukras {
-        display: flex;
-        align-items: center;
-        gap: 9px;
-        margin: 16px 8px 0;
-        color: var(--mx-kap);
-      }
-      .mx-ukras::before,
-      .mx-ukras::after {
-        content: "";
-        flex: 1;
+      /* tanka linija između gornjeg dijela i opisa */
+      .mx-crta {
         height: 1px;
-        background: linear-gradient(90deg, rgba(255, 255, 255, 0), var(--mx-rub-hover));
+        margin: 16px 8px 0;
+        background: var(--mx-linija);
       }
-      .mx-ukras::after { background: linear-gradient(90deg, var(--mx-rub-hover), rgba(255, 255, 255, 0)); }
-      .mx-ukras svg { flex: none; width: 7px; height: 10px; }
 
       /* opis: odmaknut od rubova kartice */
       .mx-opis {
@@ -551,7 +538,7 @@
       .mx-kartica--red .mx-vrh {
         flex-direction: row;
         align-items: center;
-        gap: 12px;
+        gap: 16px;
       }
       .mx-kartica--red .mx-nisa {
         width: 108px;
@@ -675,11 +662,11 @@
       const jeShadow = typeof ShadowRoot !== 'undefined' && korijen instanceof ShadowRoot;
       const cilj = jeShadow ? korijen : (korijen === document ? document.head : null);
       const stil = document.createElement('style');
-      stil.setAttribute('data-mx-kartice', '5');
+      stil.setAttribute('data-mx-kartice', '6');
       stil.textContent = CSS;
       if (!cilj) { element.appendChild(stil); return; }       // element još nije u DOM-u
       const stari = cilj.querySelector('style[data-mx-kartice]');
-      if (stari && stari.getAttribute('data-mx-kartice') === '5') return;
+      if (stari && stari.getAttribute('data-mx-kartice') === '6') return;
       if (stari) stari.remove();                              // stara verzija stila (npr. v2)
       cilj.appendChild(stil);
     }
@@ -781,25 +768,9 @@
       return String(v).trim().replace(/(\d)\.(\d{2})(?!\d)/g, '$1,$2');
     }
 
-    // Cijena kao element: eura punom veličinom, ",25 €" nešto manje
     function elementCijene(v) {
-      const e = el('span', 'mx-cijena');
-      const n = brojCijene(v);
-      if (n !== null && typeof EUR.formatToParts === 'function') {
-        const d = EUR.formatToParts(n);
-        if (d.length && d[0].type === 'integer') {
-          let i = 0, cijeli = '';
-          while (i < d.length && (d[i].type === 'integer' || d[i].type === 'group')) cijeli += d[i++].value;
-          e.appendChild(el('span', 'mx-cijena-cijeli', cijeli));
-          const ostatak = d.slice(i).map(function (x) { return x.value; }).join('');
-          if (ostatak) e.appendChild(el('span', 'mx-cijena-ostatak', ostatak));
-          return e;
-        }
-      }
       const t = cijena(v);
-      if (!t) return null;
-      e.textContent = t;
-      return e;
+      return t ? el('span', 'mx-cijena', t) : null;
     }
 
     function sigurniLink(url) {
@@ -956,13 +927,12 @@
       vrh.appendChild(glava);
       kartica.appendChild(vrh);
 
-      // UKRAS + OPIS
+      // LINIJA + OPIS
       const opis = skrati(k.opis, P.opisZnakova);
       if (opis) {
-        const ukras = el('div', 'mx-ukras');
-        ukras.setAttribute('aria-hidden', 'true');
-        ukras.innerHTML = IKONA_KAP;
-        kartica.appendChild(ukras);
+        const crta = el('div', 'mx-crta');
+        crta.setAttribute('aria-hidden', 'true');
+        kartica.appendChild(crta);
         kartica.appendChild(el('p', 'mx-opis', opis));
       }
 
