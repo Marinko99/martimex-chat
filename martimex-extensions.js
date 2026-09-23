@@ -24,12 +24,14 @@ window.MartimexExtensions = window.MartimexExtensions || [];
 
 // renderer za kartice preporučenih parfema (trace 'ext_product_card')
 window.MartimexExtensions.push({
-  match: function (trace) { return trace.type === 'ext_product_card'; },
-  render: function (trace) {
+  name: 'ProductCardExtension',
+  type: 'response',
+  match: function ({ trace }) {
+    return trace.type === 'ext_product_card' || (trace.payload && trace.payload.name === 'ext_product_card');
+  },
+  render: function ({ trace, element }) {
     var cards = (trace.payload && trace.payload.cards) || [];
-    var el = document.createElement('div');
-    el.className = 'mxc-wrap';
-    el.innerHTML = cards.map(function (c) {
+    element.innerHTML = cards.map(function (c) {
       return `
         <div class="mxc-card">
           ${c.imageUrl ? `<img class="mxc-img" src="${c.imageUrl}" alt="${c.title}">` : ''}
@@ -42,6 +44,5 @@ window.MartimexExtensions.push({
           </div>
         </div>`;
     }).join('');
-    return el;
   }
 });
