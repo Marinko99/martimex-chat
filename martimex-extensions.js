@@ -1,4 +1,4 @@
-<script type="text/javascript">
+(function () {
   // ═════════════════════════════════════════════════════════════════════
   //  MARTIMEX — kartice preporučenih proizvoda za Marti (v2)
   //
@@ -1124,25 +1124,9 @@
 
 
   // ═════════════════════════════════════════════════════════════════════
-  //  VOICEFLOW WIDGET
+  //  REGISTRACIJA — widget na stranici čita ekstenzije iz ovog niza
   // ═════════════════════════════════════════════════════════════════════
-  (function(d, t) {
-    var v = d.createElement(t),
-        s = d.getElementsByTagName(t)[0];
+  window.MartimexExtensions = window.MartimexExtensions || [];
+  window.MartimexExtensions.push(ProductCarouselExtension, ProductCardExtension);
 
-    v.onload = function() {
-      window.voiceflow.chat.load({
-        verify: { projectID: '6aabec2e323cb129d034dd89' },
-        url: 'https://general-runtime.voiceflow.com',
-        voice: { url: "https://runtime-api.voiceflow.com" },
-        assistant: {
-          extensions: [ProductCarouselExtension, ProductCardExtension]
-        }
-      });
-    }
-
-    v.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs";
-    v.type = "text/javascript";
-    s.parentNode.insertBefore(v, s);
-  })(document, 'script');
-</script> 
+})();
