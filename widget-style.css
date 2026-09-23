@@ -1,544 +1,184 @@
-/* =====================================================================
-   MARTIMEX · Marti — izgled chat widgeta (widget-style.css)
-   ---------------------------------------------------------------------
-   Početni zaslon: veliki naslov, Marti u lučnom prozoru (diše, trepće,
-   pozdravlja), kratki opis i gumb "Započni razgovor".
-   Nakon klika počinje običan razgovor u Martimex bojama.
-
-   Sve što se najčešće mijenja nalazi se odmah ispod: tekstovi, boje,
-   slike i veličine. Ostatak datoteke u pravilu ne treba dirati.
-   ===================================================================== */
+/* ============================================================
+   NOTTURNO LABS – Voiceflow widget stil ("stakleni" dizajn)
+   Ova datoteka živi u tvom GitHub repozitoriju i učitava se
+   izvana preko `stylesheet` polja u chat.load() pozivu.
+   Sve postavke koje želiš mijenjati su ovdje na vrhu.
+   ============================================================ */
 
 .vfrc-widget {
-  /* ── TEKSTOVI ─────────────────────────────────────────────────────── */
-  --mx-t-naslov-1: "Vaša osobna";
-  --mx-t-naslov-2: "savjetnica za mirise";
-  --mx-t-opis: "Pomoći ću Vam pronaći miris koji Vam odgovara, za Vas ili za poklon.";
-  --mx-t-pozdrav: "Dobar dan!";
-  --mx-t-gumb: "Započni razgovor";
-  --mx-t-gumb-novi: "Novi razgovor";
-  --mx-t-odustani: "Odustani";
-  --mx-t-launcher: "Pitaj Marti";
+  --nl-button-bg: #1f1147;
+  --nl-border-width: 2px;
+  --nl-flow-speed: 4s;             /* manje = brža animacija obruba */
+  --nl-gradient: #e03cf5, #a855f7, #6366f1, #3b82f6, #38bdf8, #3b82f6, #a855f7, #e03cf5;
+  --nl-glow-a: rgba(224, 60, 245, 0.55);
+  --nl-glow-b: rgba(59, 130, 246, 0.55);
 
-  /* ── SLIKE (u istom GitHub repozitoriju) ──────────────────────────── */
-  --mx-portret: url("https://marinko99.github.io/martimex-chat/marti-portret.jpg");
-  --mx-lice: url("https://marinko99.github.io/martimex-chat/marti-lice.jpg");
-
-  /* ── BOJE MARTIMEXA ───────────────────────────────────────────────── */
-  --mx-tinta: #000000;        /* crna iz zaglavlja webshopa */
-  --mx-roza: #e2c3ba;         /* prašnjavo roza traka iza loga */
-  --mx-puder: #f6ebe7;        /* svijetla roza podloga */
-  --mx-linija: #ece2dd;
-  --mx-tekst: #231c19;
-  --mx-sivo: #6b605c;
-  --mx-ruza: #a3615a;         /* drugi redak naslova */
-  --mx-papir: #fffdfc;
-
-  --mx-serif: Baskerville, "Libre Baskerville", "Baskerville Old Face", "Hoefler Text", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
-
-  /* ── VELIČINE POČETNOG ZASLONA ────────────────────────────────────── */
-  --mx-luk: 184px;            /* širina lučnog prozora s Marti */
-  --mx-naslov: 30px;          /* veličina naslova */
-  --mx-naslov-red: 35px;      /* visina jednog retka naslova */
-  --mx-razmak: 24px;          /* razmak naslov → luk */
-
-  --mx-glatko: cubic-bezier(.16, 1, .3, 1);
-  --mx-meko: cubic-bezier(.45, 0, .2, 1);
-  --mx-opruga: cubic-bezier(.34, 1.56, .64, 1);
+  --nl-glass-opacity: 0.55;        /* 0.8 za tamne stranice */
+  --nl-glass-blur: 24px;
+  --nl-text-dark: #24123f;
+  --nl-text-muted: #6b5a86;
+  --nl-accent: #7c3aed;
+  --nl-accent-light: #c084fc;
 }
 
-@media (max-width: 768px) {
-  .vfrc-widget { --mx-luk: 206px; --mx-naslov: 31px; --mx-naslov-red: 36px; }
+/* =================== LAUNCHER =================== */
+.vfrc-launcher {
+  box-sizing: border-box !important;
+  border: var(--nl-border-width) solid transparent !important;
+  background-color: transparent !important;
+  background-image:
+    linear-gradient(var(--nl-button-bg), var(--nl-button-bg)),
+    linear-gradient(90deg, var(--nl-gradient)) !important;
+  background-origin: padding-box, border-box !important;
+  background-clip: padding-box, border-box !important;
+  background-size: 100% 100%, 200% 100% !important;
+  background-repeat: no-repeat, repeat !important;
+  background-position: 0 0, 0% 50%;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em;
+  animation:
+    nl-flow var(--nl-flow-speed) linear infinite,
+    nl-glow calc(var(--nl-flow-speed) * 2) ease-in-out infinite !important;
 }
-@media (min-width: 769px) and (max-height: 760px) {
-  .vfrc-widget { --mx-luk: 150px; --mx-naslov: 27px; --mx-naslov-red: 31px; --mx-razmak: 18px; }
+.vfrc-launcher:focus-visible { outline: 2px solid #ffffff; outline-offset: 3px; }
+
+@keyframes nl-flow {
+  from { background-position: 0 0, 0% 50%; }
+  to   { background-position: 0 0, -200% 50%; }
 }
-@media (min-width: 769px) and (max-height: 640px) {
-  .vfrc-widget { --mx-luk: 118px; --mx-razmak: 14px; }
+@keyframes nl-glow {
+  0%, 100% { box-shadow: 0 0 16px -4px var(--nl-glow-a), 0 8px 24px -10px rgba(10, 5, 30, 0.6); }
+  50%      { box-shadow: 0 0 20px -4px var(--nl-glow-b), 0 8px 24px -10px rgba(10, 5, 30, 0.6); }
 }
 
-
-/* =====================================================================
-   PROZOR I ZAGLAVLJE
-   ===================================================================== */
-
+/* =================== STAKLENI PROZOR =================== */
 .vfrc-chat {
-  background:
-    radial-gradient(75% 40% at 50% 47%, rgba(246, 235, 231, .95), rgba(246, 235, 231, 0) 72%),
-    var(--mx-papir) !important;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, .06), 0 24px 70px -20px rgba(60, 30, 25, .35) !important;
+  background-color: rgba(250, 246, 255, var(--nl-glass-opacity)) !important;
+  background-image:
+    radial-gradient(120% 55% at 0% 0%, rgba(216, 180, 254, 0.55), rgba(216, 180, 254, 0) 60%),
+    radial-gradient(100% 50% at 100% 100%, rgba(196, 181, 253, 0.45), rgba(196, 181, 253, 0) 60%) !important;
+  -webkit-backdrop-filter: blur(var(--nl-glass-blur)) saturate(160%);
+  backdrop-filter: blur(var(--nl-glass-blur)) saturate(160%);
+  border-radius: 20px !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.65),
+    0 30px 70px -30px rgba(76, 29, 149, 0.5) !important;
 }
-/* tijekom razgovora čista podloga */
-.vfrc-chat:has(.vfrc-chat-dialog > :nth-child(2)) { background: var(--mx-papir) !important; }
 
 .vfrc-header {
-  background: var(--mx-tinta) !important;
-  border: 0 !important;
-  transition: background-color .45s var(--mx-meko);
+  background: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.6);
 }
-.vfrc-header--title {
-  font-family: var(--mx-serif) !important;
-  font-size: 19px !important;
-  font-weight: 400 !important;
-  letter-spacing: .01em;
-  color: #fff !important;
-  transition: opacity .3s ease;
-}
+.vfrc-header--title { color: var(--nl-text-dark) !important; }
 .vfrc-header--button {
-  color: #fff !important;
-  background: transparent !important;
+  color: var(--nl-text-dark) !important;
+  background: rgba(255, 255, 255, 0.45) !important;
   border-radius: 999px !important;
-  transition: background-color .2s ease, color .45s var(--mx-meko);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75);
 }
-.vfrc-header--button:hover { background: rgba(255, 255, 255, .14) !important; }
+.vfrc-header--button:hover { background: rgba(255, 255, 255, 0.85) !important; }
 
-/* Marti umjesto zadane ikone: zaglavlje i poruke */
-.vfrc-header .vfrc-avatar,
-.vfrc-system-response .vfrc-avatar {
-  box-sizing: border-box !important;
-  border-radius: 50% !important;
-  background: var(--mx-lice) 50% 35% / cover no-repeat, var(--mx-roza) !important;
-  overflow: hidden;
-  font-size: 0;
-  color: transparent;
-}
-.vfrc-header .vfrc-avatar {
-  width: 34px !important;
-  height: 34px !important;
-  padding: 0 0 0 34px !important;
-  box-shadow: 0 0 0 2px var(--mx-roza) !important;
-  transition: opacity .3s ease;
-}
-.vfrc-system-response .vfrc-avatar {
-  width: 28px !important;
-  height: 28px !important;
-  padding: 0 0 0 28px !important;
-  box-shadow: 0 0 0 1.5px #fff, 0 2px 6px rgba(60, 30, 25, .18) !important;
-}
-
-
-/* =====================================================================
-   POČETNI ZASLON
-   ===================================================================== */
-
-/* Početni zaslon = razgovor još nije počeo (u dijalogu nema poruka) */
-.vfrc-chat:has(.vfrc-chat-dialog > :only-child) .vfrc-header { background: transparent !important; }
-.vfrc-chat:has(.vfrc-chat-dialog > :only-child) .vfrc-header .vfrc-avatar,
-.vfrc-chat:has(.vfrc-chat-dialog > :only-child) .vfrc-header--title { opacity: 0; }
-.vfrc-chat:has(.vfrc-chat-dialog > :only-child) .vfrc-header--button { color: var(--mx-tinta) !important; }
-.vfrc-chat:has(.vfrc-chat-dialog > :only-child) .vfrc-header--button:hover { background: rgba(0, 0, 0, .06) !important; }
-
-/* sadržaj okomito centriran */
-.vfrc-chat:has(.vfrc-chat-dialog > :only-child) > div:has(> .vfrc-assistant-info) {
-  display: flex;
-  flex-direction: column;
-}
-
-.vfrc-assistant-info {
-  position: relative;
-  display: flex !important;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 0 0 8px !important;
-  margin: auto 0 !important;
-  max-height: 760px;
-  overflow: visible;
-  transition: max-height .55s var(--mx-meko), opacity .3s ease, padding .55s var(--mx-meko);
-}
-
-/* ── naslov: dva retka, drugi u kurzivu ── */
-.vfrc-assistant-info--title {
-  order: 1;
-  display: block !important;
-  -webkit-line-clamp: unset !important;
-  overflow: visible !important;
-  margin: 0 !important;
-  font-size: 0 !important;
-  line-height: 0 !important;
-  color: transparent !important;
-}
-.vfrc-assistant-info--title::before,
-.vfrc-assistant-info--title::after {
-  display: block;
-  height: var(--mx-naslov-red);
-  font-family: var(--mx-serif);
-  font-size: var(--mx-naslov);
-  line-height: var(--mx-naslov-red);
-  font-weight: 400;
-  letter-spacing: -.012em;
-  white-space: nowrap;
-}
-.vfrc-assistant-info--title::before {
-  content: var(--mx-t-naslov-1);
-  color: var(--mx-tinta);
-}
-.vfrc-assistant-info--title::after {
-  content: var(--mx-t-naslov-2);
-  font-style: italic;
-  color: var(--mx-ruza);
-}
-
-/* ── lučni prozor s Marti ── */
-.vfrc-assistant-info > div:first-child {
-  order: 2;
-  position: relative;
-  z-index: 1;
-  box-sizing: border-box;
-  width: var(--mx-luk);
-  aspect-ratio: 4 / 5;
-  margin: var(--mx-razmak) auto 0 !important;
-  border-radius: calc(var(--mx-luk) / 2) calc(var(--mx-luk) / 2) 18px 18px;
-  overflow: hidden;
-  isolation: isolate;
-  transform: translateZ(0);
-  background: var(--mx-roza);
+.vfrc-avatar {
   box-shadow:
-    0 2px 6px rgba(60, 30, 25, .06),
-    0 30px 38px -26px rgba(110, 55, 45, .6);
+    0 0 0 2px rgba(255, 255, 255, 0.85),
+    0 6px 18px -4px rgba(147, 51, 234, 0.55) !important;
 }
 
-/* fotografija; lagano "diše" */
-.vfrc-assistant-info .vfrc-avatar {
-  position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
-  z-index: 0;
-  box-sizing: border-box !important;
-  width: 100% !important;
-  height: calc(100% + 8px) !important;
-  max-width: none !important;
-  margin: 0 !important;
-  padding: 0 0 0 100% !important;   /* skriva zadanu Voiceflow sliku */
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  background: var(--mx-portret) 50% 0 / 100% auto no-repeat, var(--mx-roza) !important;
-  overflow: hidden;
-  font-size: 0;
-  color: transparent;
-  animation: mx-dah 5.6s ease-in-out infinite;
-}
-
-/* kapci: trepću (lijevo i desno oko) */
-.vfrc-assistant-info > div:first-child::before,
-.vfrc-assistant-info > div:first-child::after {
-  content: "";
-  position: absolute;
-  z-index: 1;
-  border-radius: 50%;
-  background:
-    radial-gradient(ellipse 60% 55% at 50% 38%, rgba(255, 196, 160, .35), rgba(255, 196, 160, 0) 75%),
-    linear-gradient(to bottom, #9e5a3b 0%, #c27854 24%, #b56a47 52%, #7c3e24 67%, #1e0d07 76%, #1e0d07 100%);
-  transform-origin: 50% 50%;
-  transform: scaleY(0);
-  filter: blur(.35px);
-  pointer-events: none;
-  animation: mx-dah 5.6s ease-in-out infinite, mx-treptaj 7.4s linear 1.2s infinite;
-}
-.vfrc-assistant-info > div:first-child::before {
-  left: 35.4%; top: 40.2%; width: 11.6%; height: 4.4%;
-  rotate: -4deg;
-}
-.vfrc-assistant-info > div:first-child::after {
-  left: 56.1%; top: 37.4%; width: 9.4%; height: 4.2%;
-  rotate: -16deg;
-}
-
-/* topli sjaj iza luka */
-.vfrc-assistant-info::before {
-  content: "";
-  position: absolute;
-  z-index: 0;
-  left: 50%;
-  top: calc(2 * var(--mx-naslov-red) + var(--mx-razmak) + var(--mx-luk) * .22);
-  width: calc(var(--mx-luk) * 1.7);
-  height: calc(var(--mx-luk) * 1.05);
-  translate: -50% 0;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(226, 195, 186, .75), rgba(226, 195, 186, 0));
-  filter: blur(6px);
-  pointer-events: none;
-  animation: mx-sjaj 5.6s ease-in-out infinite;
-}
-
-/* oblačić "Dobar dan!" — prvo tipka (tri točkice), pa pozdravi */
-.vfrc-assistant-info::after {
-  content: var(--mx-t-pozdrav);
-  position: absolute;
-  z-index: 3;
-  top: calc(2 * var(--mx-naslov-red) + var(--mx-razmak) + var(--mx-luk) * .16);
-  right: calc(50% + var(--mx-luk) / 2 - 30px);
-  box-sizing: border-box;
-  max-width: 230px;
-  padding: 10px 15px;
-  white-space: nowrap;
-  overflow: hidden;
-  border-radius: 18px 18px 5px 18px;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 16px;
-  color: var(--mx-tinta);
-  background:
-    radial-gradient(circle, var(--mx-sivo) 0 2.3px, transparent 2.9px) 13px 50% / 0 0 no-repeat,
-    radial-gradient(circle, var(--mx-sivo) 0 2.3px, transparent 2.9px) 22px 50% / 0 0 no-repeat,
-    radial-gradient(circle, var(--mx-sivo) 0 2.3px, transparent 2.9px) 31px 50% / 0 0 no-repeat,
-    #fff;
-  box-shadow: 0 12px 26px -12px rgba(80, 40, 30, .45), 0 0 0 1px rgba(0, 0, 0, .05);
-  transform-origin: 100% 100%;
-}
-/* pozdrav se ponavlja pri svakom otvaranju chata
-   (ako Voiceflow jednom promijeni interne nazive, oblačić je samo statičan) */
-.vfrc-widget._1emja3f1 .vfrc-assistant-info::after {
-  animation:
-    mx-mjehur-ulaz .45s var(--mx-opruga) .8s both,
-    mx-tipkanje .8s ease-in-out 1.05s 2,
-    mx-mjehur-tekst .55s var(--mx-glatko) 2.7s both;
-}
-
-/* ── opis ── */
-.vfrc-assistant-info--description {
-  order: 3;
-  display: block !important;
-  -webkit-line-clamp: unset !important;
-  overflow: visible !important;
-  max-width: 290px;
-  margin: 26px auto 0 !important;
-  font-size: 0 !important;
-  line-height: 0 !important;
-  color: transparent !important;
-}
-.vfrc-assistant-info--description::before {
-  content: var(--mx-t-opis);
-  display: block;
-  font-size: 14.5px;
-  line-height: 1.55;
-  color: var(--mx-sivo);
-}
-
-/* ── gumb za početak razgovora ── */
-.vfrc-footer > div:has(> #vfrc-start-chat) {
-  background: transparent !important;
-  box-shadow: none !important;
-  padding: 12px 20px 30px !important;
-}
-#vfrc-start-chat {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  height: 52px !important;
-  border: 0 !important;
-  border-radius: 999px !important;
-  background: var(--mx-tinta) !important;
-  color: #fff !important;
-  font-size: 0 !important;
-  box-shadow: 0 14px 26px -16px rgba(0, 0, 0, .7) !important;
-  transition: color .45s var(--mx-meko), transform .2s ease;
-}
-#vfrc-start-chat::before {
-  content: "";
-  position: absolute;
-  top: 0; right: 0; bottom: 0; left: 0;
-  z-index: -1;
-  background: var(--mx-roza);
-  transform: scaleX(0);
-  transform-origin: 0 50%;
-  transition: transform .6s var(--mx-meko);
-}
-#vfrc-start-chat::after {
-  content: var(--mx-t-gumb);
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: .02em;
-}
-.vfrc-chat:has(.vfrc-chat-dialog > :nth-child(2)) #vfrc-start-chat::after { content: var(--mx-t-gumb-novi); }
-#vfrc-start-chat:hover { color: var(--mx-tinta) !important; }
-#vfrc-start-chat:hover::before { transform: scaleX(1); }
-#vfrc-start-chat:active { transform: scale(.985); }
-#vfrc-start-chat:focus-visible { outline: 2px solid var(--mx-tinta); outline-offset: 3px; }
-
-/* kad razgovor počne, početni zaslon se povuče */
-.vfrc-chat:has(.vfrc-chat-dialog > :nth-child(2)) .vfrc-assistant-info {
-  max-height: 0;
-  opacity: 0;
-  padding: 0 !important;
-  margin: 0 !important;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-
-/* =====================================================================
-   RAZGOVOR
-   ===================================================================== */
+.vfrc-assistant-info--title       { color: var(--nl-text-dark) !important; }
+.vfrc-assistant-info--description { color: var(--nl-text-muted) !important; }
 
 .vfrc-system-response .vfrc-message,
 .vfrc-typing-indicator {
-  background: var(--mx-puder) !important;
-  color: var(--mx-tekst) !important;
-  border-radius: 6px 18px 18px 18px !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  color: var(--nl-text-dark) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 14px !important;
+  box-shadow: 0 6px 18px -10px rgba(76, 29, 149, 0.35);
 }
-.vfrc-system-response .vfrc-message {
-  font-size: 14.5px !important;
-  line-height: 1.5 !important;
-}
-.vfrc-message p,
-.vfrc-message .markdown { color: inherit !important; }
-.vfrc-message a { color: #7d4a42 !important; text-decoration: underline; text-underline-offset: 2px; }
 
 .vfrc-user-response > div:first-child {
-  background: var(--mx-tinta) !important;
-  color: #fff !important;
-  border-radius: 18px 18px 6px 18px !important;
-  padding: 11px 15px !important;
-  font-size: 14.5px !important;
-  line-height: 1.5 !important;
+  background: linear-gradient(135deg, rgba(243, 232, 255, 0.92), rgba(221, 214, 254, 0.92)) !important;
+  color: #3b1d6e !important;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 14px !important;
+  box-shadow: 0 6px 18px -10px rgba(124, 58, 237, 0.45);
 }
 
 .vfrc-system-response--actions .vfrc-button {
-  background: #fff !important;
-  color: var(--mx-tinta) !important;
-  border: 1px solid var(--mx-tinta) !important;
+  background: rgba(250, 240, 255, 0.75) !important;
+  color: #7e22ce !important;
+  border: 1px solid rgba(192, 132, 252, 0.45) !important;
   border-radius: 999px !important;
-  padding: 8px 16px 7px !important;
-  font-weight: 600 !important;
-  box-shadow: none !important;
-  transition: background-color .25s ease, border-color .25s ease;
+  padding: 7px 14px 6px !important;
+  box-shadow: 0 4px 14px -8px rgba(126, 34, 206, 0.45);
 }
 .vfrc-system-response--actions .vfrc-button:hover {
-  background: var(--mx-roza) !important;
-  border-color: var(--mx-roza) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: #6b21a8 !important;
 }
 
-/* polje za unos */
-.vfrc-footer { background: transparent !important; }
 .vfrc-input-container {
-  background: #fff !important;
-  border: 1px solid var(--mx-linija) !important;
-  box-shadow: 0 8px 22px -16px rgba(60, 30, 25, .4) !important;
+  background: rgba(255, 255, 255, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 8px 24px -14px rgba(76, 29, 149, 0.35) !important;
 }
-.vfrc-input-container:focus-within {
-  border-color: var(--mx-tinta) !important;
-  box-shadow: 0 0 0 3px rgba(226, 195, 186, .5) !important;
-}
-.vfrc-input-container:focus-within > div:first-child { box-shadow: none !important; }
-.vfrc-chat-input { background: transparent !important; color: var(--mx-tekst) !important; }
-.vfrc-chat-input::placeholder { color: #9b8f8a !important; }
+.vfrc-chat-input { background: transparent !important; color: var(--nl-text-dark) !important; }
+.vfrc-chat-input::placeholder { color: #8a7aa3 !important; }
+.vfrc-footer a { color: var(--nl-text-muted) !important; }
 
 #vfrc-send-message {
-  background: var(--mx-tinta) !important;
-  color: #fff !important;
-  transition: opacity .2s ease;
+  background: linear-gradient(135deg, var(--nl-accent-light), var(--nl-accent)) !important;
+  box-shadow: 0 4px 14px -2px rgba(124, 58, 237, 0.55) !important;
+  transition: opacity 0.15s ease, box-shadow 0.15s ease;
 }
-#vfrc-send-message svg { color: #fff !important; }
-.vfrc-input-container:has(.vfrc-chat-input:placeholder-shown) #vfrc-send-message { opacity: .3; }
-
-.vfrc-footer a { color: #9b8f8a !important; }
-
-/* dijalog "Novi razgovor / Odustani" */
-.vfrc-prompt { background: var(--mx-papir) !important; }
-.vfrc-prompt .vfrc-button {
-  border-radius: 999px !important;
-  font-size: 0 !important;
-  background: #fff !important;
-  color: var(--mx-tinta) !important;
-  border: 1px solid var(--mx-tinta) !important;
-}
-.vfrc-prompt .vfrc-button[variant="primary"] {
-  background: var(--mx-tinta) !important;
-  color: #fff !important;
-}
-.vfrc-prompt .vfrc-button::after { font-size: 15px; font-weight: 600; }
-.vfrc-prompt .vfrc-button[variant="primary"]::after { content: var(--mx-t-gumb-novi); }
-.vfrc-prompt .vfrc-button[variant="secondary"]::after { content: var(--mx-t-odustani); }
-
-
-/* =====================================================================
-   GUMB ZA OTVARANJE (launcher)
-   ===================================================================== */
-
-.vfrc-launcher {
-  background-color: var(--mx-tinta) !important;
-  color: #fff !important;
-  box-shadow: 0 14px 30px -14px rgba(0, 0, 0, .6), inset 0 0 0 1px rgba(255, 255, 255, .08) !important;
-}
-.vfrc-launcher:hover { background-color: #1d1d1d !important; transform: scale(1.04) !important; }
-.vfrc-launcher:active { background-color: #000 !important; transform: scale(.97) !important; }
-.vfrc-launcher:focus-visible { outline: 2px solid var(--mx-roza); outline-offset: 3px; }
-
-/* Marti umjesto ikone oblačića */
-.vfrc-launcher img {
-  box-sizing: border-box !important;
-  width: 26px !important;
-  height: 26px !important;
-  padding: 0 0 0 26px !important;
-  border-radius: 50% !important;
-  background: var(--mx-lice) 50% 35% / cover no-repeat, var(--mx-roza) !important;
-  overflow: hidden;
-  animation: mx-prisutna 3.2s ease-out infinite;
-}
-.vfrc-launcher > div:last-child {
-  font-size: 0 !important;
-  margin-left: 6px;
-}
-.vfrc-launcher > div:last-child::after {
-  content: var(--mx-t-launcher);
-  font-family: var(--mx-serif);
-  font-size: 16px;
-  letter-spacing: .01em;
+#vfrc-send-message svg { color: #ffffff !important; }
+.vfrc-input-container:has(.vfrc-chat-input:placeholder-shown) #vfrc-send-message {
+  opacity: 0.45;
+  box-shadow: none !important;
 }
 
+.vfrc-footer > div:has(#vfrc-start-chat),
+.vfrc-prompt {
+  background: rgba(255, 255, 255, 0.75) !important;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+#vfrc-start-chat { background: linear-gradient(135deg, var(--nl-accent-light), var(--nl-accent)) !important; }
 
-/* =====================================================================
-   ANIMACIJE
-   ===================================================================== */
+/* Mobitel: manje prozirnosti radi čitljivosti preko cijelog ekrana */
+@media (max-width: 768px) {
+  .vfrc-chat {
+    border-radius: 0 !important;
+    background-color: rgba(250, 246, 255, 0.92) !important;
+  }
+}
+/* Stariji preglednici bez podrške za zamućenje */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .vfrc-chat { background-color: rgba(250, 246, 255, 0.95) !important; }
+}
 
-@keyframes mx-dah {
-  0%, 100% { translate: 0 0; }
-  42%      { translate: 0 -1.6px; }
+/* Animirani obrub u bojama i oko chat prozora — otkomentiraj ako ga želiš uz stakleni izgled */
+/*
+.vfrc-chat::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: var(--nl-border-width);
+  background-image: linear-gradient(90deg, var(--nl-gradient));
+  background-size: 200% 100%;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 20;
+  animation: nl-flow var(--nl-flow-speed) linear infinite;
 }
-@keyframes mx-sjaj {
-  0%, 100% { opacity: .75; }
-  42%      { opacity: 1; }
-}
-@keyframes mx-treptaj {
-  0%, 30%  { transform: scaleY(0); }
-  31.3%    { transform: scaleY(1); }
-  33.2%    { transform: scaleY(0); }
-  82%      { transform: scaleY(0); }
-  83.3%    { transform: scaleY(1); }
-  85.2%    { transform: scaleY(0); }
-  88%      { transform: scaleY(0); }
-  89.3%    { transform: scaleY(1); }
-  91.2%    { transform: scaleY(0); }
-  100%     { transform: scaleY(0); }
-}
-@keyframes mx-mjehur-ulaz {
-  from { opacity: 0; transform: translateY(8px) scale(.6); }
-  to   { opacity: 1; transform: none; }
-}
-@keyframes mx-tipkanje {
-  0%, 100% { background-position: 13px 50%, 22px 50%, 31px 50%, 0 0; }
-  20%      { background-position: 13px 28%, 22px 50%, 31px 50%, 0 0; }
-  40%      { background-position: 13px 50%, 22px 28%, 31px 50%, 0 0; }
-  60%      { background-position: 13px 50%, 22px 50%, 31px 28%, 0 0; }
-}
-@keyframes mx-mjehur-tekst {
-  from { max-width: 51px; color: transparent; background-size: 8px 8px, 8px 8px, 8px 8px, auto; }
-  to   { max-width: 230px; color: var(--mx-tinta); background-size: 0 0, 0 0, 0 0, auto; }
-}
-@keyframes mx-prisutna {
-  0%   { box-shadow: 0 0 0 1.5px var(--mx-roza), 0 0 0 1.5px rgba(226, 195, 186, .7); }
-  70%  { box-shadow: 0 0 0 1.5px var(--mx-roza), 0 0 0 7px rgba(226, 195, 186, 0); }
-  100% { box-shadow: 0 0 0 1.5px var(--mx-roza), 0 0 0 7px rgba(226, 195, 186, 0); }
-}
+@media (max-width: 768px) { .vfrc-chat::after { display: none; } }
+*/
 
 @media (prefers-reduced-motion: reduce) {
-  .vfrc-assistant-info .vfrc-avatar,
-  .vfrc-assistant-info::before,
-  .vfrc-assistant-info::after,
-  .vfrc-assistant-info > div:first-child::before,
-  .vfrc-assistant-info > div:first-child::after,
-  .vfrc-launcher img { animation: none !important; }
-  .vfrc-assistant-info { transition: none; }
+  .vfrc-launcher, .vfrc-chat::after { animation: none !important; }
 }
