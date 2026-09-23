@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Martimex — test chat widgeta</title>
+</head>
+<body>
+
+  <h1>Martimex</h1>
+  <p>Ovo je prazna testna stranica. Chat widget (Marti) trebao bi se pojaviti u donjem desnom kutu.</p>
+
+  <!-- ===================================================================
+       VOICEFLOW CHAT WIDGET
+       -------------------------------------------------------------------
+       1) Ispod, na mjestu 'UPIŠI_SVOJ_PROJECT_ID', upiši svoj pravi
+          Voiceflow Project ID (nalazi se u Voiceflow projektu pod
+          Integrations → Website Chat, u zadanom kodu za ugradnju).
+       2) 'stylesheet' polje već pokazuje na tvoj widget-style.css
+          objavljen preko GitHub Pagesa (isti URL obrazac koji već
+          koristiš za slike Marti u samom CSS-u).
+       =================================================================== -->
+  <script type="text/javascript">
+    (function (d, t) {
+      var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
+      v.onload = function () {
+        window.voiceflow.chat.load({
+          verify: { projectID: 'UPIŠI_SVOJ_PROJECT_ID' },
+          url: 'https://general-runtime.voiceflow.com',
+          versionID: 'production',
+          assistant: {
+            stylesheet: 'https://marinko99.github.io/martimex-chat/widget-style.css'
+          }
+        });
+      };
+      v.src = "https://cdn.voiceflow.com/widget/bundle.mjs";
+      v.type = "text/javascript";
+      s.parentNode.insertBefore(v, s);
+    })(document, 'script');
+  </script>
+
+</body>
+</html>
