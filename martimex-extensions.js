@@ -1,6 +1,6 @@
 (function () {
   // ═════════════════════════════════════════════════════════════════════
-  //  MARTIMEX — kartice preporučenih proizvoda za Marti (v10)
+  //  MARTIMEX — kartice preporučenih proizvoda za Marti (v11)
   //
   //  Dva extensiona, isti dizajn:
   //   1) ProductCarouselExtension → trace "ext_product_carousel"
@@ -40,6 +40,9 @@
   //     su izvedeni pomicanjem položaja, ne transformacijama, pa preglednik
   //     nikad ne razdvaja bočicu i auru u zasebne slojeve (inače se u
   //     Safariju oko bočice zna pojaviti bijeli pravokutnik)
+  //   - fotografija se kvalitetno umanji točno na piksele ekrana u kojima se
+  //     prikazuje, pa je preglednik ne mora umanjivati dok se bočica pomiče:
+  //     ostaje oštra i na hoveru
   //   - tanka linija koja se prema krajevima gubi odvaja gornji dio od opisa
   //
   //  Pojava: kad Marti pošalje preporuke, preko kartica prođe blaga
@@ -111,6 +114,11 @@
       try { return new Intl.NumberFormat('hr-HR', { style: 'currency', currency: 'EUR' }); }
       catch (e) { return { format: function (n) { return n.toFixed(2).replace('.', ',') + '\u00a0€'; } }; }
     })();
+
+    // Prostor slike (širina, visina u CSS px); slika zauzima 90 % visine.
+    // Iste brojke koriste i CSS i obrada fotografije.
+    const VITRINA = { carousel: [150, 180], red: [108, 144] };
+    const VISINA_SLIKE = 0.9;
 
     // Miješanje boja u JS-u (umjesto CSS color-mix) da izgled radi i u starijim preglednicima
     function rgb(hex) {
@@ -220,11 +228,11 @@
         --mx-aura-2: ${prozirna(B.puder, .95)};
         --mx-sjena: rgba(95, 52, 44, .28);
         position: relative;
-        width: 150px;
-        height: 180px;
+        width: ${VITRINA.carousel[0]}px;
+        height: ${VITRINA.carousel[1]}px;
         isolation: isolate;
         opacity: 0;                   /* cijela scena se pojavi odjednom, kad je fotografija spremna */
-        transition: opacity .8s var(--mx-meko);
+        transition: opacity .5s var(--mx-meko);
       }
       .mx-nisa.mx-ucitano,
       .mx-nisa.mx-bez-slike { opacity: 1; }
@@ -263,7 +271,7 @@
         left: 0;
         top: calc(1% + 8px);          /* bočica se pri pojavi lagano podigne na mjesto */
         width: 100%;
-        height: 90%;
+        height: ${VISINA_SLIKE * 100}%;
         max-width: none;
         max-height: none;
         margin: 0;
@@ -558,8 +566,8 @@
         gap: 16px;
       }
       .mx-kartica--red .mx-nisa {
-        width: 108px;
-        height: 144px;
+        width: ${VITRINA.red[0]}px;
+        height: ${VITRINA.red[1]}px;
       }
       .mx-kartica--red .mx-glava { flex: 1 1 0; }
 
@@ -664,11 +672,11 @@
       const jeShadow = typeof ShadowRoot !== 'undefined' && korijen instanceof ShadowRoot;
       const cilj = jeShadow ? korijen : (korijen === document ? document.head : null);
       const stil = document.createElement('style');
-      stil.setAttribute('data-mx-kartice', '10');
+      stil.setAttribute('data-mx-kartice', '11');
       stil.textContent = CSS;
       if (!cilj) { element.appendChild(stil); return; }       // element još nije u DOM-u
       const stari = cilj.querySelector('style[data-mx-kartice]');
-      if (stari && stari.getAttribute('data-mx-kartice') === '10') return;
+      if (stari && stari.getAttribute('data-mx-kartice') === '11') return;
       if (stari) stari.remove();                              // stara verzija stila (npr. v2)
       cilj.appendChild(stil);
     }
@@ -828,39 +836,41 @@
     //  - pozadina (4 kuta): bijela ili svijetlosiva postaje prava prozirnost,
     //    tamna ili šarena fotografija ispuni okvir kao uokvirena slika
     //  - boja stakla postaje boja aure (crne, bijele, sive, prozirne → roza)
+    //  - bočica se kvalitetno umanji točno na veličinu prikaza × gustoća piksela
+    //    ekrana: preglednik je više ne mora umanjivati, pa je oštra i u pokretu
     // Kad se slika ne može pročitati, ostaje CSS stapanje (multiply) i roza aura.
-    function obradiFotografiju(img, nisa, zavrsi) {
+    function obradiFotografiju(img, nisa, velicina, zavrsi) {
       let gotovo = false;
       const kraj = function () { if (!gotovo) { gotovo = true; zavrsi(); } };
       setTimeout(kraj, 2500);        // sigurnost: bočica se prikaže i ako obrada zapne
 
-      const w0 = img.naturalWidth, h0 = img.naturalHeight;
-      const mjera = Math.min(1, 480 / Math.max(w0, h0));
-      const w = Math.max(8, Math.round(w0 * mjera)), h = Math.max(8, Math.round(h0 * mjera));
-      let platno, podaci;
+      const W = img.naturalWidth, H = img.naturalHeight;
+
+      // 1) mali uzorak cijele fotografije: kakva je pozadina i koje je boje staklo
+      const U = 48;
+      let u;
       try {
-        platno = document.createElement('canvas');
-        platno.width = w;
-        platno.height = h;
-        const g = platno.getContext('2d', { willReadFrequently: true });
-        g.drawImage(img, 0, 0, w, h);
-        podaci = g.getImageData(0, 0, w, h);
+        const c = document.createElement('canvas');
+        c.width = U;
+        c.height = U;
+        const g = c.getContext('2d', { willReadFrequently: true });
+        g.drawImage(img, 0, 0, U, U);
+        u = g.getImageData(0, 0, U, U).data;
       } catch (e) { kraj(); return; } // slika s druge domene: ostaje CSS stapanje
-      const d = podaci.data;
 
       function kut(x0, y0) {
         let r = 0, gr = 0, b = 0, a = 0, n = 0;
         for (let y = y0; y < y0 + 3; y++) {
           for (let x = x0; x < x0 + 3; x++) {
-            const i = (y * w + x) * 4;
-            r += d[i]; gr += d[i + 1]; b += d[i + 2]; a += d[i + 3]; n++;
+            const i = (y * U + x) * 4;
+            r += u[i]; gr += u[i + 1]; b += u[i + 2]; a += u[i + 3]; n++;
           }
         }
         if (a / n < 180) return null;  // prozirno
         const lo = Math.min(r, gr, b) / n;
         return { lo: lo, boja: Math.max(r, gr, b) / n - lo };
       }
-      const puni = [kut(1, 1), kut(w - 4, 1), kut(1, h - 4), kut(w - 4, h - 4)]
+      const puni = [kut(0, 0), kut(U - 3, 0), kut(0, U - 3), kut(U - 3, U - 3)]
         .filter(function (z) { return z && z.lo < 246; })
         .sort(function (a, b) { return a.lo - b.lo; });
       let pojacaj = 1;               // > 1 kad je pozadina svijetlosiva (studijska)
@@ -877,12 +887,33 @@
           return;
         }
       }
-      if (P.auraUBojiBocice) obojiAuru(d, prag, nisa);
+      if (P.auraUBojiBocice) obojiAuru(u, prag, nisa);
+
+      // 2) bočica točno u pikselima ekrana, složena kao object-fit: contain (50 % 55 %)
+      const gustoca = Math.min(3, Math.max(2, Math.ceil(window.devicePixelRatio || 1)));
+      const cw = Math.round(velicina[0] * gustoca), ch = Math.round(velicina[1] * gustoca);
+      const f = Math.min(cw / W, ch / H);
+      const dw = Math.max(1, Math.round(W * f)), dh = Math.max(1, Math.round(H * f));
+      const dx = Math.round((cw - dw) * 0.5), dy = Math.round((ch - dh) * 0.55);
+      let platno, g2, podaci;
+      try {
+        const umanjena = umanji(img, W, H, dw, dh);
+        platno = document.createElement('canvas');
+        platno.width = cw;
+        platno.height = ch;
+        g2 = platno.getContext('2d', { willReadFrequently: true });
+        g2.imageSmoothingEnabled = true;
+        g2.imageSmoothingQuality = 'high';
+        g2.drawImage(umanjena.slika, 0, 0, umanjena.w, umanjena.h, dx, dy, dw, dh);
+        podaci = g2.getImageData(0, 0, cw, ch);
+      } catch (e) { kraj(); return; }
+      const d = podaci.data;
 
       // bijela pozadina → prozirnost; boje se "odvoje" od bijele pa rubovi i
       // sjene s fotografije ostanu mekani (isti izgled kao stapanje, bez CSS-a)
       const SUM = 4;                 // JPEG šum oko čiste bijele
       for (let i = 0; i < d.length; i += 4) {
+        if (d[i + 3] === 0) continue;  // prazan rub oko fotografije
         const r = Math.min(255, d[i] * pojacaj);
         const gr = Math.min(255, d[i + 1] * pojacaj);
         const b = Math.min(255, d[i + 2] * pojacaj);
@@ -893,7 +924,7 @@
         d[i + 2] = 255 - (255 - b) / a;
         d[i + 3] = a * d[i + 3];
       }
-      platno.getContext('2d').putImageData(podaci, 0, 0);
+      g2.putImageData(podaci, 0, 0);
 
       const zamijeni = function (url) {
         if (!url) { kraj(); return; }
@@ -904,6 +935,25 @@
         if (platno.toBlob) platno.toBlob(function (blob) { zamijeni(blob ? URL.createObjectURL(blob) : ''); }, 'image/png');
         else zamijeni(platno.toDataURL('image/png'));
       } catch (e) { kraj(); }
+    }
+
+    // Kvalitetno umanjivanje: velika fotografija se prepolovi korak po korak
+    // (jedan veliki skok s 2000 na 200 px daje nazubljene rubove)
+    function umanji(izvor, w, h, ciljW, ciljH) {
+      let slika = izvor;
+      while (w / 2 >= ciljW && h / 2 >= ciljH) {
+        w = Math.round(w / 2);
+        h = Math.round(h / 2);
+        const c = document.createElement('canvas');
+        c.width = w;
+        c.height = h;
+        const g = c.getContext('2d');
+        g.imageSmoothingEnabled = true;
+        g.imageSmoothingQuality = 'high';
+        g.drawImage(slika, 0, 0, w, h);
+        slika = c;
+      }
+      return { slika: slika, w: slika === izvor ? izvor.naturalWidth : w, h: slika === izvor ? izvor.naturalHeight : h };
     }
 
     function obojiAuru(d, prag, nisa) {
@@ -958,11 +1008,14 @@
         img.alt = '';                 // naziv je već u tekstu kartice
         img.decoding = 'async';
         img.draggable = false;
+        if ('fetchPriority' in img) img.fetchPriority = 'high';   // slike su glavni sadržaj poruke
+        const prostor = VITRINA[varijanta === 'carousel' ? 'carousel' : 'red'];
+        const velicina = [prostor[0], prostor[1] * VISINA_SLIKE];  // okvir slike u CSS px
         let spremno = false;
         const gotovo = function () {
           if (spremno || !img.naturalWidth) return;
           spremno = true;
-          obradiFotografiju(img, nisa, function () { nisa.classList.add('mx-ucitano'); });
+          obradiFotografiju(img, nisa, velicina, function () { nisa.classList.add('mx-ucitano'); });
         };
         img.addEventListener('load', gotovo, { once: true });
         img.addEventListener('error', function () { img.remove(); prazanIzlog(nisa); }, { once: true });
