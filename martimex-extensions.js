@@ -1,6 +1,6 @@
 (function () {
   // ═════════════════════════════════════════════════════════════════════
-  //  MARTIMEX — kartice preporučenih proizvoda za Marti (v9)
+  //  MARTIMEX — kartice preporučenih proizvoda za Marti (v10)
   //
   //  Dva extensiona, isti dizajn:
   //   1) ProductCarouselExtension → trace "ext_product_carousel"
@@ -35,6 +35,11 @@
   //     auri boje vlastitog stakla (kao svjetlo koje prolazi kroz obojenu
   //     bočicu), s mekom sjenom ispod. Kad je miš iznad kartice, bočica se
   //     malo podigne, sjena se smanji, a aura se raširi
+  //   - bijela pozadina fotografije pretvara se u pravu prozirnost (canvas);
+  //     kad to nije moguće (slika s druge domene), stapa se CSS-om. Pokreti
+  //     su izvedeni pomicanjem položaja, ne transformacijama, pa preglednik
+  //     nikad ne razdvaja bočicu i auru u zasebne slojeve (inače se u
+  //     Safariju oko bočice zna pojaviti bijeli pravokutnik)
   //   - tanka linija koja se prema krajevima gubi odvaja gornji dio od opisa
   //
   //  Pojava: kad Marti pošalje preporuke, preko kartica prođe blaga
@@ -202,7 +207,10 @@
         min-width: 0;
       }
 
-      /* prostor slike: bez kutije, prozirna podloga */
+      /* prostor slike: bez kutije, prozirna podloga
+         Važno: unutar .mx-nisa ništa se ne animira transformacijom, prozirnošću
+         ni filterom — samo položajem (top/left...). Tako preglednik bočicu i
+         auru uvijek crta u istom sloju i stapanje bijele pozadine ne puca. */
       .mx-izlog {
         position: relative;
         flex: none;
@@ -214,11 +222,12 @@
         position: relative;
         width: 150px;
         height: 180px;
-        border-radius: 12px;          /* vidi se samo kad fotografija ima svoju pozadinu */
-        clip-path: inset(0 round 12px);
-        overflow: hidden;
         isolation: isolate;
+        opacity: 0;                   /* cijela scena se pojavi odjednom, kad je fotografija spremna */
+        transition: opacity .8s var(--mx-meko);
       }
+      .mx-nisa.mx-ucitano,
+      .mx-nisa.mx-bez-slike { opacity: 1; }
 
       /* aura: meki oblak boje stakla iza bočice */
       .mx-aura {
@@ -226,18 +235,12 @@
         top: 4%; right: 0; bottom: 12%; left: 0;
         z-index: 0;
         background:
-          radial-gradient(33% 25% at 43% 40%, var(--mx-aura), transparent),
-          radial-gradient(31% 25% at 58% 62%, var(--mx-aura), transparent),
-          radial-gradient(50% 44% at 50% 50%, var(--mx-aura-2), transparent);
-        filter: blur(5px);
-        opacity: 0;
-        transform: scale(.9);
-        transition: opacity .9s var(--mx-meko), transform 1.1s var(--mx-glatko);
-        will-change: transform, opacity;
+          radial-gradient(34% 27% at 43% 40%, var(--mx-aura), transparent),
+          radial-gradient(32% 27% at 58% 62%, var(--mx-aura), transparent),
+          radial-gradient(46% 42% at 50% 50%, var(--mx-aura-2), transparent);
+        transition: top 1.1s var(--mx-glatko), right 1.1s var(--mx-glatko), bottom 1.1s var(--mx-glatko), left 1.1s var(--mx-glatko);
         pointer-events: none;
       }
-      .mx-ucitano .mx-aura,
-      .mx-bez-slike .mx-aura { opacity: 1; transform: none; }
 
       /* meka sjena ispod bočice: bočica kao da lebdi */
       .mx-sjena {
@@ -249,18 +252,16 @@
         height: 9%;
         border-radius: 50%;
         background: radial-gradient(closest-side, var(--mx-sjena), transparent);
-        opacity: 0;
-        transition: opacity .9s var(--mx-meko), transform .9s var(--mx-glatko);
-        will-change: transform, opacity;
+        transition: left .9s var(--mx-glatko), right .9s var(--mx-glatko), top .9s var(--mx-glatko), height .9s var(--mx-glatko);
         pointer-events: none;
       }
-      .mx-ucitano .mx-sjena { opacity: 1; }
+      .mx-bez-slike .mx-sjena { display: none; }
 
       .mx-boca {
         position: absolute;
         z-index: 1;
         left: 0;
-        top: 1%;
+        top: calc(1% + 8px);          /* bočica se pri pojavi lagano podigne na mjesto */
         width: 100%;
         height: 90%;
         max-width: none;
@@ -268,20 +269,25 @@
         margin: 0;
         object-fit: contain;
         object-position: 50% 55%;
-        mix-blend-mode: multiply; /* bijela pozadina fotografije nestaje, ostaje samo bočica */
-        opacity: 0;
-        transform: translateY(8px) scale(.97);
-        transition: opacity .7s var(--mx-meko), transform .9s var(--mx-glatko);
+        mix-blend-mode: multiply;     /* rezerva: bijela pozadina se stapa kad fotografiju nije moguće obraditi */
+        transition: top .9s var(--mx-glatko);
         pointer-events: none;
         user-select: none;
         -webkit-user-drag: none;
       }
-      .mx-ucitano .mx-boca { opacity: 1; transform: none; }
+      .mx-ucitano .mx-boca { top: 1%; }
+      .mx-prozirno .mx-boca { mix-blend-mode: normal; }   /* pozadina je već prava prozirnost */
 
       /* fotografija s tamnom ili šarenom pozadinom: ispunjava okvir kao uokvirena slika */
+      .mx-foto {
+        border-radius: 12px;
+        clip-path: inset(0 round 12px);
+        overflow: hidden;
+      }
       .mx-foto .mx-aura,
       .mx-foto .mx-sjena { display: none; }
-      .mx-foto .mx-boca {
+      .mx-foto .mx-boca,
+      .mx-foto.mx-ucitano .mx-boca {
         left: 0;
         top: 0;
         width: 100%;
@@ -289,9 +295,7 @@
         object-fit: cover;
         object-position: 50% 50%;
         mix-blend-mode: normal;
-        transform: scale(1.06);
       }
-      .mx-foto.mx-ucitano .mx-boca { transform: none; }
 
       .mx-prazno {
         position: absolute;
@@ -556,8 +560,6 @@
       .mx-kartica--red .mx-nisa {
         width: 108px;
         height: 144px;
-        border-radius: 12px;
-        clip-path: inset(0 round 12px);
       }
       .mx-kartica--red .mx-glava { flex: 1 1 0; }
 
@@ -567,10 +569,10 @@
       /* ── interakcija: kad je miš iznad kartice, bočica se podigne ── */
       @media (hover: hover) and (pointer: fine) {
         .mx-kartica:hover::before { border-color: var(--mx-rub-hover); }
-        .mx-kartica:hover .mx-ucitano .mx-boca { transform: translateY(-5px); }
-        .mx-kartica:hover .mx-ucitano .mx-sjena { transform: scale(.78); opacity: .55; }
-        .mx-kartica:hover .mx-ucitano .mx-aura { transform: scale(1.07); }
-        .mx-kartica:hover .mx-foto.mx-ucitano .mx-boca { transform: scale(1.04); }
+        .mx-kartica:hover .mx-ucitano .mx-boca { top: calc(1% - 5px); }
+        .mx-kartica:hover .mx-ucitano .mx-sjena { left: 30%; right: 30%; top: 81%; height: 7%; }
+        .mx-kartica:hover .mx-ucitano .mx-aura { top: 1%; right: -5%; bottom: 9%; left: -5%; }
+        .mx-kartica:hover .mx-foto.mx-ucitano .mx-boca { top: 0; }
       }
 
       /* ── pojava: izmaglica spreja i bočice koje izranjaju iz nje ── */
@@ -652,7 +654,7 @@
         .mx-maglica { display: none; }
         .mx-pojava .mx-kartica,
         .mx-pojava .mx-kontrole { animation: mx-samo-prozirnost .35s linear backwards; animation-delay: 0s; }
-        .mx-kartica, .mx-kartica::before, .mx-boca, .mx-aura, .mx-sjena, .mx-gumb { transition-duration: .01s !important; }
+        .mx-kartica, .mx-kartica::before, .mx-nisa, .mx-boca, .mx-aura, .mx-sjena, .mx-gumb { transition-duration: .01s !important; }
       }
     `;
 
@@ -662,11 +664,11 @@
       const jeShadow = typeof ShadowRoot !== 'undefined' && korijen instanceof ShadowRoot;
       const cilj = jeShadow ? korijen : (korijen === document ? document.head : null);
       const stil = document.createElement('style');
-      stil.setAttribute('data-mx-kartice', '9');
+      stil.setAttribute('data-mx-kartice', '10');
       stil.textContent = CSS;
       if (!cilj) { element.appendChild(stil); return; }       // element još nije u DOM-u
       const stari = cilj.querySelector('style[data-mx-kartice]');
-      if (stari && stari.getAttribute('data-mx-kartice') === '9') return;
+      if (stari && stari.getAttribute('data-mx-kartice') === '10') return;
       if (stari) stari.remove();                              // stara verzija stila (npr. v2)
       cilj.appendChild(stil);
     }
@@ -821,56 +823,93 @@
       nisa.appendChild(p);
     }
 
-    // Fotografija proizvoda se "čita" na smanjenoj kopiji (24 × 24 px):
-    //  pozadina (4 kuta): bijela ili prozirna ostaje i nestaje u kartici;
-    //   svijetlosiva se posvijetli da i ona nestane; tamna ili šarena
-    //   fotografija ispuni okvir kao uokvirena slika
-    //  boja bočice: aura i sjena poprime boju stakla; crne, bijele, sive i
-    //   prozirne bočice zadrže roza auru brenda
-    function prilagodiFotografiju(img, nisa) {
-      const N = 24;
-      let d;
+    // Fotografija proizvoda se "čita" preko canvasa (moguće kad je slika s iste
+    // domene kao stranica, npr. martimex.hr → martimex.hr):
+    //  - pozadina (4 kuta): bijela ili svijetlosiva postaje prava prozirnost,
+    //    tamna ili šarena fotografija ispuni okvir kao uokvirena slika
+    //  - boja stakla postaje boja aure (crne, bijele, sive, prozirne → roza)
+    // Kad se slika ne može pročitati, ostaje CSS stapanje (multiply) i roza aura.
+    function obradiFotografiju(img, nisa, zavrsi) {
+      let gotovo = false;
+      const kraj = function () { if (!gotovo) { gotovo = true; zavrsi(); } };
+      setTimeout(kraj, 2500);        // sigurnost: bočica se prikaže i ako obrada zapne
+
+      const w0 = img.naturalWidth, h0 = img.naturalHeight;
+      const mjera = Math.min(1, 480 / Math.max(w0, h0));
+      const w = Math.max(8, Math.round(w0 * mjera)), h = Math.max(8, Math.round(h0 * mjera));
+      let platno, podaci;
       try {
-        const c = document.createElement('canvas');
-        c.width = N;
-        c.height = N;
-        const g = c.getContext('2d', { willReadFrequently: true });
-        g.drawImage(img, 0, 0, N, N);
-        d = g.getImageData(0, 0, N, N).data;
-      } catch (e) { return; }        // slika s druge domene se ne smije čitati: ostaje roza aura
-      function kut(x, y) {
-        let r = 0, gr = 0, b = 0, a = 0;
-        for (let dy = 0; dy < 2; dy++) {
-          for (let dx = 0; dx < 2; dx++) {
-            const i = ((y + dy) * N + x + dx) * 4;
-            r += d[i]; gr += d[i + 1]; b += d[i + 2]; a += d[i + 3];
+        platno = document.createElement('canvas');
+        platno.width = w;
+        platno.height = h;
+        const g = platno.getContext('2d', { willReadFrequently: true });
+        g.drawImage(img, 0, 0, w, h);
+        podaci = g.getImageData(0, 0, w, h);
+      } catch (e) { kraj(); return; } // slika s druge domene: ostaje CSS stapanje
+      const d = podaci.data;
+
+      function kut(x0, y0) {
+        let r = 0, gr = 0, b = 0, a = 0, n = 0;
+        for (let y = y0; y < y0 + 3; y++) {
+          for (let x = x0; x < x0 + 3; x++) {
+            const i = (y * w + x) * 4;
+            r += d[i]; gr += d[i + 1]; b += d[i + 2]; a += d[i + 3]; n++;
           }
         }
-        if (a / 4 < 180) return null; // prozirno
-        const lo = Math.min(r, gr, b) / 4;
-        return { lo: lo, boja: Math.max(r, gr, b) / 4 - lo };
+        if (a / n < 180) return null;  // prozirno
+        const lo = Math.min(r, gr, b) / n;
+        return { lo: lo, boja: Math.max(r, gr, b) / n - lo };
       }
-      const puni = [kut(0, 0), kut(N - 2, 0), kut(0, N - 2), kut(N - 2, N - 2)]
+      const puni = [kut(1, 1), kut(w - 4, 1), kut(1, h - 4), kut(w - 4, h - 4)]
         .filter(function (z) { return z && z.lo < 246; })
         .sort(function (a, b) { return a.lo - b.lo; });
+      let pojacaj = 1;               // > 1 kad je pozadina svijetlosiva (studijska)
       let prag = 236;                // piksel tamniji od ovoga pripada bočici, ne pozadini
       if (puni.length >= 2) {
         const lo = puni[1].lo;       // drugi najtamniji kut: jedan "zalutali" kut ne odlučuje
         const boja = Math.max.apply(null, puni.slice(1).map(function (z) { return z.boja; }));
         if (lo >= 212 && boja <= 18) {
-          img.style.filter = 'brightness(' + Math.min(1.2, 255 / lo).toFixed(3) + ')';
+          pojacaj = Math.min(1.2, 255 / lo);
           prag = lo - 16;
         } else {
           nisa.classList.add('mx-foto');
+          kraj();
           return;
         }
       }
-      if (P.auraUBojiBocice) obojiAuru(d, N, prag, nisa);
+      if (P.auraUBojiBocice) obojiAuru(d, prag, nisa);
+
+      // bijela pozadina → prozirnost; boje se "odvoje" od bijele pa rubovi i
+      // sjene s fotografije ostanu mekani (isti izgled kao stapanje, bez CSS-a)
+      const SUM = 4;                 // JPEG šum oko čiste bijele
+      for (let i = 0; i < d.length; i += 4) {
+        const r = Math.min(255, d[i] * pojacaj);
+        const gr = Math.min(255, d[i + 1] * pojacaj);
+        const b = Math.min(255, d[i + 2] * pojacaj);
+        const a = Math.max(0, 255 - SUM - Math.min(r, gr, b)) / (255 - SUM);
+        if (a <= 0) { d[i + 3] = 0; continue; }
+        d[i] = 255 - (255 - r) / a;
+        d[i + 1] = 255 - (255 - gr) / a;
+        d[i + 2] = 255 - (255 - b) / a;
+        d[i + 3] = a * d[i + 3];
+      }
+      platno.getContext('2d').putImageData(podaci, 0, 0);
+
+      const zamijeni = function (url) {
+        if (!url) { kraj(); return; }
+        img.addEventListener('load', function () { nisa.classList.add('mx-prozirno'); kraj(); }, { once: true });
+        img.src = url;
+      };
+      try {
+        if (platno.toBlob) platno.toBlob(function (blob) { zamijeni(blob ? URL.createObjectURL(blob) : ''); }, 'image/png');
+        else zamijeni(platno.toDataURL('image/png'));
+      } catch (e) { kraj(); }
     }
 
-    function obojiAuru(d, N, prag, nisa) {
+    function obojiAuru(d, prag, nisa) {
       let r = 0, g = 0, b = 0, t = 0;
-      for (let i = 0; i < N * N * 4; i += 4) {
+      const korak = Math.max(1, Math.floor(d.length / 4 / 6000)) * 4;   // dovoljan uzorak piksela
+      for (let i = 0; i < d.length; i += korak) {
         if (d[i + 3] < 128) continue;                          // prozirni dio slike
         const mn = Math.min(d[i], d[i + 1], d[i + 2]);
         const mx = Math.max(d[i], d[i + 1], d[i + 2]);
@@ -923,8 +962,7 @@
         const gotovo = function () {
           if (spremno || !img.naturalWidth) return;
           spremno = true;
-          prilagodiFotografiju(img, nisa);
-          nisa.classList.add('mx-ucitano');
+          obradiFotografiju(img, nisa, function () { nisa.classList.add('mx-ucitano'); });
         };
         img.addEventListener('load', gotovo, { once: true });
         img.addEventListener('error', function () { img.remove(); prazanIzlog(nisa); }, { once: true });
