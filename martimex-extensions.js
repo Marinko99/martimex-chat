@@ -1,6 +1,6 @@
 (function () {
   // ═════════════════════════════════════════════════════════════════════
-  //  MARTIMEX — kartice preporučenih proizvoda za Marti (v8)
+  //  MARTIMEX — kartice preporučenih proizvoda za Marti (v9)
   //
   //  Dva extensiona, isti dizajn:
   //   1) ProductCarouselExtension → trace "ext_product_carousel"
@@ -36,7 +36,6 @@
   //     bočicu), s mekom sjenom ispod. Kad je miš iznad kartice, bočica se
   //     malo podigne, sjena se smanji, a aura se raširi
   //   - tanka linija koja se prema krajevima gubi odvaja gornji dio od opisa
-  //   - gumb s tankom unutarnjom linijom, kao utisnuta etiketa
   //
   //  Pojava: kad Marti pošalje preporuke, preko kartica prođe blaga
   //  ružičasta izmaglica sa sitnim kapljicama (kao sprej parfema) i
@@ -50,12 +49,13 @@
   // ─────────────────────────────────────────────────────────────────────
   const MX_POSTAVKE = {
     boje: {                   // uvijek u obliku #rrggbb
-      tinta:   '#000000', // crna kao trake u headeru i footeru: nazivi, cijene, gumb
+      tinta:   '#000000', // crna kao trake u headeru i footeru: marka, naziv, cijena
       roza:    '#e2c3ba', // prašnjava roza iza loga: izmaglica, oznaka popusta
       puder:   '#f6ebe7', // najsvjetlija roza: rubovi aure oko bočice
       linija:  '#eee3de', // tanki rubovi i traka napretka
       dim:     '#6b605c', // opis proizvoda
-      kartica: '#ffffff'  // pozadina kartice
+      kartica: '#ffffff', // pozadina kartice
+      gumb:    '#333333'  // tamno siva: gumb "Pogledaj proizvod"
     },
 
     // Font za sav tekst u karticama. Avenir je ugrađen u Apple uređaje;
@@ -233,6 +233,7 @@
         opacity: 0;
         transform: scale(.9);
         transition: opacity .9s var(--mx-meko), transform 1.1s var(--mx-glatko);
+        will-change: transform, opacity;
         pointer-events: none;
       }
       .mx-ucitano .mx-aura,
@@ -250,6 +251,7 @@
         background: radial-gradient(closest-side, var(--mx-sjena), transparent);
         opacity: 0;
         transition: opacity .9s var(--mx-meko), transform .9s var(--mx-glatko);
+        will-change: transform, opacity;
         pointer-events: none;
       }
       .mx-ucitano .mx-sjena { opacity: 1; }
@@ -410,7 +412,7 @@
       /* razmak iznad gumba (u carouselu gura gumb na dno kartice) */
       .mx-razmak { display: block; flex: 1 0 16px; }
 
-      /* gumb: crna pilula s tankom unutarnjom linijom, kao utisnuta etiketa */
+      /* gumb: tamno siva pilula */
       .mx-gumb {
         position: relative;
         display: inline-flex;
@@ -419,13 +421,12 @@
         align-self: center;
         flex: none;
         max-width: 100%;
-        min-height: 42px;
-        padding: 0 30px;
+        min-height: 36px;
+        padding: 0 22px;
         border-radius: 999px;
-        background: var(--mx-tinta);
-        box-shadow: inset 0 0 0 3px var(--mx-tinta), inset 0 0 0 4px ${prozirna(B.puder, .38)};
+        background: ${B.gumb};
         color: var(--mx-puder);
-        font-size: 12.5px;
+        font-size: 12px;
         line-height: 1.2;
         font-weight: 500;
         letter-spacing: .03em;
@@ -661,11 +662,11 @@
       const jeShadow = typeof ShadowRoot !== 'undefined' && korijen instanceof ShadowRoot;
       const cilj = jeShadow ? korijen : (korijen === document ? document.head : null);
       const stil = document.createElement('style');
-      stil.setAttribute('data-mx-kartice', '8');
+      stil.setAttribute('data-mx-kartice', '9');
       stil.textContent = CSS;
       if (!cilj) { element.appendChild(stil); return; }       // element još nije u DOM-u
       const stari = cilj.querySelector('style[data-mx-kartice]');
-      if (stari && stari.getAttribute('data-mx-kartice') === '8') return;
+      if (stari && stari.getAttribute('data-mx-kartice') === '9') return;
       if (stari) stari.remove();                              // stara verzija stila (npr. v2)
       cilj.appendChild(stil);
     }
@@ -1024,9 +1025,8 @@
         magla.appendChild(kap);
       }
       korijen.appendChild(magla);
-      const t1 = setTimeout(function () { magla.remove(); }, 2300);
-      const t2 = setTimeout(function () { korijen.classList.remove('mx-pojava'); }, 140 + broj * 110 + 1150);
-      return function () { clearTimeout(t1); clearTimeout(t2); };
+      setTimeout(function () { magla.remove(); }, 2300);
+      setTimeout(function () { korijen.classList.remove('mx-pojava'); }, 140 + broj * 110 + 1150);
     }
 
     // ── PONAŠANJE CAROUSELA ──────────────────────────────────────────────
@@ -1158,38 +1158,74 @@
     }
 
     // ── PRIKAZI ──────────────────────────────────────────────────────────
+    // Voiceflow zna ponovno pozvati render za istu poruku (npr. kad stigne
+    // sljedeća poruka). Tada postojeće kartice ostaju netaknute; da se grade
+    // iznova, bočica i efekti ispod kursora na trenutak bi se "resetirali".
+    function potpisPrikaza(tip, kartice) {
+      return hash(tip + '|' + JSON.stringify(kartice));
+    }
+    function postojeciKorijen(element, potpis) {
+      const djeca = element.children;
+      for (let i = 0; i < djeca.length; i++) {
+        if (djeca[i].classList.contains('mx') && djeca[i].getAttribute('data-mx-potpis') === potpis) return djeca[i];
+      }
+      return null;
+    }
+    const BEZ_CISCENJA = function () {};
+
     function pripremi(element) {
       ubaciStil(element);
       ubaciFontove();
       element.style.width = '100%';
-      // ako widget ponovno pozove render na istom elementu, ne dupliciraj kartice
+      // drugačije kartice na istom elementu: stare se uklanjaju
       Array.prototype.slice.call(element.children).forEach(function (n) {
         if (n.classList && n.classList.contains('mx')) element.removeChild(n);
       });
     }
 
-    function noviKorijen(element, klasa, uloga) {
+    function noviKorijen(klasa, uloga, potpis) {
       const korijen = el('div', 'mx ' + klasa);
       korijen.setAttribute('role', uloga);
       korijen.setAttribute('aria-label', P.oznakaRegije);
+      korijen.setAttribute('data-mx-potpis', potpis);
       return korijen;
     }
 
-    function istaknuta(k, element, tip) {
-      const korijen = noviKorijen(element, 'mx-istaknuta', 'group');
+    function istaknuta(k, element, tip, potpis) {
+      const korijen = noviKorijen('mx-istaknuta', 'group', potpis);
       korijen.appendChild(izgradiKarticu(k, 0, 'istaknuta'));
       element.appendChild(korijen);
-      const ocisti = trebaPojava(tip, [k]) ? pokreniPojavu(korijen, 1) : null;
-      return function () { if (ocisti) ocisti(); };
+      if (trebaPojava(tip, [k])) pokreniPojavu(korijen, 1);
+      return BEZ_CISCENJA;
+    }
+
+    // Slušatelji carousela (strelice, povlačenje); nikad dvaput na istom carouselu
+    function pokreniCarousel(korijen) {
+      if (korijen.__mxCiscenje) korijen.__mxCiscenje();
+      const strelice = korijen.querySelectorAll('.mx-strelica');
+      const stop = aktivirajCarousel(korijen, korijen.querySelector('.mx-traka'), korijen.querySelector('.mx-napredak'),
+        korijen.querySelector('.mx-palac'), strelice[0], strelice[1]);
+      let aktivno = true;
+      const ocisti = function () {
+        if (!aktivno) return;
+        aktivno = false;
+        stop();
+        if (korijen.__mxCiscenje === ocisti) korijen.__mxCiscenje = null;
+      };
+      korijen.__mxCiscenje = ocisti;
+      return ocisti;
     }
 
     function carousel(trace, element) {
       const kartice = uzmiKartice(trace);
       if (!kartice.length) return;
+      const potpis = potpisPrikaza(trace.type, kartice);
+      const postojeci = postojeciKorijen(element, potpis);
+      if (postojeci) return postojeci.classList.contains('mx-carousel') ? pokreniCarousel(postojeci) : BEZ_CISCENJA;
       pripremi(element);
-      if (kartice.length === 1) return istaknuta(kartice[0], element, trace.type);
+      if (kartice.length === 1) return istaknuta(kartice[0], element, trace.type, potpis);
 
-      const korijen = noviKorijen(element, 'mx-carousel mx-preljev', 'region');
+      const korijen = noviKorijen('mx-carousel mx-preljev', 'region', potpis);
       korijen.setAttribute('aria-roledescription', 'vrtuljak');
 
       const traka = el('div', 'mx-traka');
@@ -1198,13 +1234,10 @@
       const kontrole = el('div', 'mx-kontrole');
       const napredak = el('div', 'mx-napredak');
       napredak.setAttribute('aria-hidden', 'true');
-      const palac = el('div', 'mx-palac');
-      napredak.appendChild(palac);
+      napredak.appendChild(el('div', 'mx-palac'));
       const strelice = el('div', 'mx-strelice');
-      const prev = gumbStrelica('lijevo');
-      const next = gumbStrelica('desno');
-      strelice.appendChild(prev);
-      strelice.appendChild(next);
+      strelice.appendChild(gumbStrelica('lijevo'));
+      strelice.appendChild(gumbStrelica('desno'));
       kontrole.appendChild(napredak);
       kontrole.appendChild(strelice);
 
@@ -1212,23 +1245,25 @@
       korijen.appendChild(kontrole);
       element.appendChild(korijen);
 
-      const ciscenje = [aktivirajCarousel(korijen, traka, napredak, palac, prev, next)];
-      if (trebaPojava(trace.type, kartice)) ciscenje.push(pokreniPojavu(korijen, kartice.length));
-      return function () { ciscenje.forEach(function (f) { f(); }); };
+      const ocisti = pokreniCarousel(korijen);
+      if (trebaPojava(trace.type, kartice)) pokreniPojavu(korijen, kartice.length);
+      return ocisti;
     }
 
     function popis(trace, element) {
       const kartice = uzmiKartice(trace);
       if (!kartice.length) return;
+      const potpis = potpisPrikaza(trace.type, kartice);
+      if (postojeciKorijen(element, potpis)) return BEZ_CISCENJA;
       pripremi(element);
-      if (kartice.length === 1) return istaknuta(kartice[0], element, trace.type);
+      if (kartice.length === 1) return istaknuta(kartice[0], element, trace.type, potpis);
 
-      const korijen = noviKorijen(element, 'mx-lista', 'group');
+      const korijen = noviKorijen('mx-lista', 'group', potpis);
       kartice.forEach(function (k, i) { korijen.appendChild(izgradiKarticu(k, i, 'red')); });
       element.appendChild(korijen);
 
-      const ocisti = trebaPojava(trace.type, kartice) ? pokreniPojavu(korijen, kartice.length) : null;
-      return function () { if (ocisti) ocisti(); };
+      if (trebaPojava(trace.type, kartice)) pokreniPojavu(korijen, kartice.length);
+      return BEZ_CISCENJA;
     }
 
     return { carousel: carousel, popis: popis };
