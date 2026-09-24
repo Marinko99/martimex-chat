@@ -1,6 +1,6 @@
 (function () {
   // ═════════════════════════════════════════════════════════════════════
-  //  MARTIMEX — kartice preporučenih proizvoda za Marti (v14)
+  //  MARTIMEX — kartice preporučenih proizvoda za Marti (v15)
   //
   //  Dva extensiona, isti dizajn:
   //   1) ProductCarouselExtension → trace "ext_product_carousel"
@@ -17,13 +17,14 @@
   //
   //  Raspored kartice:
   //   ┌────────────────────────────┐
-  //   │ ┌───────┐    Marka         │
+  //   │           MARKA            │   ← naslov kartice, veći i podebljan
+  //   │ ┌───────┐                  │
   //   │ │ SLIKA │    Naziv         │
-  //   │ │       │    CIJENA        │
+  //   │ │       │    Cijena        │
   //   │ └───────┘                  │
   //   │ Opis artikla preko cijele  │
   //   │ širine kartice             │
-  //   │     [ Pogledaj proizvod ]  │
+  //   │    [ Pogledaj proizvod ]   │
   //   └────────────────────────────┘
   //   U carouselu (uske kartice) isti redoslijed ide jedno ispod drugog.
   //   Na proizvod vodi samo gumb, i to u istom prozoru (bez novih kartica).
@@ -355,7 +356,7 @@
         color: var(--mx-kartica);
       }
 
-      /* marka, naziv, cijena: poravnato lijevo */
+      /* naziv i cijena uz sliku: poravnato lijevo */
       .mx-glava {
         display: flex;
         flex-direction: column;
@@ -367,13 +368,17 @@
       }
       .mx-marka,
       .mx-naziv { text-wrap: balance; }   /* višeredni naziv lomi se u retke podjednake duljine */
+      /* marka: naslov kartice, iznad slike i svega ostalog */
       .mx-marka {
+        display: block;
         max-width: 100%;
-        font-size: 16px;
-        line-height: 1.25;
+        margin: 0 0 12px;
+        font-size: 20px;
+        line-height: 1.2;
         font-weight: 800;
         letter-spacing: .005em;
         color: var(--mx-tinta);
+        text-align: center;
         overflow-wrap: break-word;
       }
       .mx-naziv {
@@ -385,7 +390,6 @@
         color: var(--mx-tinta);
         overflow-wrap: break-word;
       }
-      .mx-marka + .mx-naziv { margin-top: 2px; }
       .mx-cijene {
         display: flex;
         flex-direction: column;
@@ -740,11 +744,11 @@
       const jeShadow = typeof ShadowRoot !== 'undefined' && korijen instanceof ShadowRoot;
       const cilj = jeShadow ? korijen : (korijen === document ? document.head : null);
       const stil = document.createElement('style');
-      stil.setAttribute('data-mx-kartice', '14');
+      stil.setAttribute('data-mx-kartice', '15');
       stil.textContent = CSS;
       if (!cilj) { element.appendChild(stil); return; }       // element još nije u DOM-u
       const stari = cilj.querySelector('style[data-mx-kartice]');
-      if (stari && stari.getAttribute('data-mx-kartice') === '14') return;
+      if (stari && stari.getAttribute('data-mx-kartice') === '15') return;
       if (stari) stari.remove();                              // stara verzija stila (npr. v2)
       cilj.appendChild(stil);
     }
@@ -1136,11 +1140,11 @@
       izlog.appendChild(nisa);
       vrh.appendChild(izlog);
 
-      // MARKA, NAZIV, CIJENA
+      // MARKA kao naslov kartice (iznad slike), pa NAZIV i CIJENA uz sliku
+      const d = razdvojiNaziv(k.naziv);
+      if (d.marka) kartica.appendChild(el('div', 'mx-marka', d.marka));
       const glava = el('div', 'mx-glava');
       if (k.oznaka) glava.appendChild(el('span', 'mx-oznaka', k.oznaka));
-      const d = razdvojiNaziv(k.naziv);
-      if (d.marka) glava.appendChild(el('span', 'mx-marka', d.marka));
       if (d.naziv) glava.appendChild(el('div', 'mx-naziv', d.naziv));
 
       const nCijena = brojIz(k.cijena);
